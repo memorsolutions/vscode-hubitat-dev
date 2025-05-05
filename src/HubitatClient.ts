@@ -129,14 +129,19 @@ export class HubitatClient {
     const username = hubInfo.username;
     const password = hubInfo.password;
     try {
-      const response = await this.httpClient.post("/login",
+      const response = await this.httpClient.get("/login");
+      const sessionCookie = response.headers["set-cookie"];
+
+      await this.httpClient.post("/login",
         {
           'username': username,
           'password': password,
           'submit': 'Login'
         },
-        { validateStatus: (status) => { return status === 302; } });
-      const sessionCookie = response.headers["set-cookie"];
+        {
+          validateStatus: (status) => { return status === 302; },
+          headers: {"Cookie": sessionCookie ? sessionCookie[0] : undefined}
+        });
       return sessionCookie ? sessionCookie[0] : undefined;
     }
     catch (error) {
